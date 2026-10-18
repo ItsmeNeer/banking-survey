@@ -6,7 +6,7 @@
   // ---------- Question content ----------
   var BANK_TYPES = [
     "A large national bank (for example Chase, Bank of America, Wells Fargo, PNC, Truist, Capital One)",
-    "A regional or community bank (for example a local Virginia or D.C. bank)",
+    "A regional or community bank",
     "A credit union",
     "An online-only bank",
     "Not sure"
@@ -33,8 +33,6 @@
     "A family member chose it and I never changed",
     "The bank's involvement in the community"
   ];
-  var HASSLE = "“I stay with my bank mainly because switching would be a hassle, not because I’m happy with it.”";
-
   var Q = {
     q1: { section: "Getting started", type: "single", col: "Q1 Owns or runs a business",
       prompt: "Do you own or help run a business?",
@@ -50,85 +48,83 @@
     q4: { section: "Your business", type: "single", col: "Q4 Employees",
       prompt: "How many people work at your business, including you?",
       options: ["Just me", "2 to 9", "10 to 49", "50 to 249", "250 or more"] },
-    q5: { section: "Your business", type: "single", col: "Q5 Annual revenue",
-      prompt: "Roughly what is your business’s annual revenue?",
-      help: "Choose “Prefer not to say” if you’d rather skip this one.",
-      options: ["Under $1 million", "$1 million to $5 million", "$5 million to $10 million", "Over $10 million", "Prefer not to say"] },
-    q6: { section: "Your business", type: "single", col: "Q6 Location",
-      prompt: "Where is your business located?",
-      options: ["Fairfax County", "Arlington or Alexandria", "Loudoun County", "Washington, D.C.", "Elsewhere in Northern Virginia", "Maryland suburbs of D.C.", "Outside the D.C. area"] },
 
-    q7: { section: "Your bank relationship", type: "single", col: "Q7 Bank type",
+    q5: { section: "Your bank relationship", type: "single", col: "Q5 Bank type",
       prompt: "What kind of bank does your business mainly use?", options: BANK_TYPES },
-    q8: { section: "Your bank relationship", type: "single", col: "Q8 Years with bank",
+    q6: { section: "Your bank relationship", type: "single", col: "Q6 Years with bank",
       prompt: "How long has your business banked there?", options: TENURE },
-    q9: { section: "Your bank relationship", type: "single", col: "Q9 Has a named contact",
+    q7: { section: "Your bank relationship", type: "single", col: "Q7 Has a named contact",
       prompt: "Is there a specific person at your bank you can call or email directly by name?", options: YES_NO_UNSURE },
-    q10: { section: "Your bank relationship", type: "single", col: "Q10 Check-in frequency",
+    q8: { section: "Your bank relationship", type: "single", col: "Q8 Check-in frequency",
       prompt: "When nothing is wrong, how often does someone from your bank reach out to check in?",
       options: ["Never", "Less than once a year", "About once a year", "About once a quarter", "Monthly or more"] },
-    q11: { section: "Your bank relationship", type: "multi", col: "Q11 Other products at bank",
+    q9: { section: "Your bank relationship", type: "multi", col: "Q9 Other products at bank",
       prompt: "Besides your main business account, what else does your business have at the same bank?",
       help: "Check all that apply.", exclusive: "None of these",
       options: ["A business loan or line of credit", "A business credit card", "Payroll services", "Card processing (merchant services)", "Cash management services, like wire transfers or remote deposit", "The owner’s personal accounts", "None of these"] },
 
-    q12: { section: "Why you stay", type: "grid", col: "Q12 Importance",
-      prompt: "How important is each of these in keeping your business at its current bank?",
-      rows: STAY_REASONS, cols: ["Not important", "Somewhat", "Very important"] },
-    q13: { section: "Why you stay", type: "single", col: "Q13 Biggest reason to stay",
-      prompt: "Which one of those is the biggest reason you stay?", options: STAY_REASONS },
-    q14: { section: "Why you stay", type: "scale", col: "Q14 Stays because switching is a hassle (1-5)",
-      prompt: "How much do you agree with this statement?", quote: HASSLE,
+    q10: { section: "Why you stay", type: "multi", max: 2, col: "Q10 Top reasons to stay",
+      prompt: "What are the top 2 reasons your business stays with its bank?", help: "Choose up to 2.",
+      options: STAY_REASONS },
+    q11: { section: "Why you stay", type: "scale", col: "Q11 Switching would be a hassle (1-5)",
+      prompt: "How much do you agree with this statement?", quote: "“Switching to a different bank would be a hassle for my business.”",
       min: 1, max: 5, minLabel: "Strongly disagree", maxLabel: "Strongly agree" },
-    q15: { section: "Why you stay", type: "single", col: "Q15 Would follow main contact",
+    q12: { section: "Why you stay", type: "scale", col: "Q12 Satisfaction with bank (1-5)",
+      prompt: "Overall, how satisfied are you with your business’s bank?",
+      min: 1, max: 5, minLabel: "Very dissatisfied", maxLabel: "Very satisfied" },
+    q13: { section: "Why you stay", type: "single", col: "Q13 Would follow main contact",
       prompt: "If your main contact at your bank moved to a different bank, how likely would you be to move your business with them?",
       options: ["Very unlikely", "Somewhat unlikely", "Not sure", "Somewhat likely", "Very likely", "I don’t have a main contact"] },
-    q16: { section: "Why you stay", type: "scale", col: "Q16 Likely to recommend (0-10)",
+    q14: { section: "Why you stay", type: "scale", col: "Q14 Likely to recommend (0-10)",
       prompt: "How likely are you to recommend your bank to another business owner?",
       min: 0, max: 10, minLabel: "Not at all likely", maxLabel: "Extremely likely" },
 
-    q17: { section: "Switching, and what would help", type: "single", col: "Q17 Switched banks in last 5 years",
+    q15: { section: "Switching, and what would help", type: "single", col: "Q15 Switched banks in last 5 years",
       prompt: "Has your business switched its main bank in the last 5 years?",
       options: ["Yes", "No, but I’ve seriously considered it", "No"] },
-    q18: { section: "Switching, and what would help", type: "multi", max: 3, col: "Q18 What would make you switch",
+    q16: { section: "Switching, and what would help", type: "multi", max: 3, col: "Q16 What would make you switch",
       prompt: "Which of these would be most likely to make you switch banks?", help: "Choose up to 3.",
       exclusive: "Nothing would make me switch",
       options: ["Better interest rates or lower fees somewhere else", "A frustrating service experience", "My main contact at the bank leaving", "The bank not approving a loan I needed", "The bank not offering a product or service I needed", "Poor online or mobile tools", "The bank merging or being sold", "Nothing would make me switch"] },
-    q19: { section: "Switching, and what would help", type: "single", col: "Q19 Has recommended bank",
+    q17: { section: "Switching, and what would help", type: "single", col: "Q17 Has recommended bank",
       prompt: "Have you ever recommended your bank to another business owner?", options: ["Yes", "No"] },
-    q20: { section: "Switching, and what would help", type: "single", col: "Q20 Referral reward would help",
+    q18: { section: "Switching, and what would help", type: "single", col: "Q18 Referral reward would help",
       prompt: "If your bank rewarded you for referring other businesses, such as with a better loan rate or lower fees, would you be more likely to refer?",
       options: ["Yes, definitely", "Maybe", "No"] },
-    q21: { section: "Switching, and what would help", type: "multi", max: 2, col: "Q21 What would strengthen relationship",
+    q19: { section: "Switching, and what would help", type: "multi", max: 2, col: "Q19 What would strengthen relationship",
       prompt: "Which of these would most strengthen your relationship with your bank?", help: "Choose up to 2.",
       exclusive: "Nothing, I’m already satisfied",
       options: ["A scheduled check-in or business review once or twice a year", "A backup contact in case my main contact is unavailable", "Better rates for keeping more of my business at the bank", "Workshops on cash flow, loans, or growing a business", "Networking events with other local business owners", "Better online and mobile tools", "Nothing, I’m already satisfied"] },
-    q22: { section: "Switching, and what would help", type: "text", optional: true, col: "Q22 Comments",
+    q20: { section: "Switching, and what would help", type: "text", optional: true, col: "Q20 Comments",
       prompt: "Anything else that makes you loyal to your bank, or frustrated with it?", help: "Optional." },
 
-    q23: { section: "Your bank", type: "single", col: "Q23 Bank type (personal)",
+    q21: { section: "Your bank", type: "single", col: "Q21 Bank type (personal)",
       prompt: "What kind of bank do you mainly use for your personal accounts?", options: BANK_TYPES },
-    q24: { section: "Your bank", type: "single", col: "Q24 Years with bank (personal)",
+    q22: { section: "Your bank", type: "single", col: "Q22 Years with bank (personal)",
       prompt: "How long have you banked there?", options: TENURE },
-    q25: { section: "Your bank", type: "single", col: "Q25 Has a named contact (personal)",
+    q23: { section: "Your bank", type: "single", col: "Q23 Has a named contact (personal)",
       prompt: "Is there a specific person at your bank you can call or email directly by name?", options: YES_NO_UNSURE },
-    q26: { section: "Why you stay", type: "single", col: "Q26 Biggest reason to stay (personal)",
-      prompt: "What is the biggest reason you stay with your bank?", options: PERSONAL_STAY },
-    q27: { section: "Why you stay", type: "scale", col: "Q27 Stays because switching is a hassle (personal, 1-5)",
-      prompt: "How much do you agree with this statement?", quote: HASSLE,
+    q24: { section: "Why you stay", type: "multi", max: 2, col: "Q24 Top reasons to stay (personal)",
+      prompt: "What are the top 2 reasons you stay with your bank?", help: "Choose up to 2.", options: PERSONAL_STAY },
+    q25: { section: "Why you stay", type: "scale", col: "Q25 Switching would be a hassle (personal, 1-5)",
+      prompt: "How much do you agree with this statement?", quote: "“Switching to a different bank would be a hassle for me.”",
       min: 1, max: 5, minLabel: "Strongly disagree", maxLabel: "Strongly agree" },
-    q28: { section: "Switching", type: "multi", max: 3, col: "Q28 What would make you switch (personal)",
+    q26: { section: "Why you stay", type: "scale", col: "Q26 Satisfaction with bank (personal, 1-5)",
+      prompt: "Overall, how satisfied are you with your bank?",
+      min: 1, max: 5, minLabel: "Very dissatisfied", maxLabel: "Very satisfied" },
+    q27: { section: "Switching", type: "multi", max: 3, col: "Q27 What would make you switch (personal)",
       prompt: "Which of these would be most likely to make you switch banks?", help: "Choose up to 3.",
       exclusive: "Nothing would make me switch",
       options: ["Better interest rates or lower fees somewhere else", "A frustrating service experience", "Poor online or mobile tools", "Moving away from my branch", "A friend or family member recommending another bank", "Nothing would make me switch"] },
-    q29: { section: "Switching", type: "scale", col: "Q29 Likely to recommend (personal, 0-10)",
+    q28: { section: "Switching", type: "scale", col: "Q28 Likely to recommend (personal, 0-10)",
       prompt: "How likely are you to recommend your bank to a friend?",
       min: 0, max: 10, minLabel: "Not at all likely", maxLabel: "Extremely likely" }
   };
 
   var ALL_IDS = Object.keys(Q);
-  var BUSINESS = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15", "q16", "q17", "q18", "q19", "q20", "q21", "q22"];
-  var PERSONAL = ["q1", "q23", "q24", "q25", "q26", "q27", "q28", "q29"];
+  var BUSINESS = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15", "q16", "q17", "q18", "q19", "q20"];
+  var NOT_DECIDER = ["q1", "q2"];
+  var PERSONAL = ["q1", "q21", "q22", "q23", "q24", "q25", "q26", "q27", "q28"];
 
   // ---------- State ----------
   var state = {
@@ -160,9 +156,19 @@
     var a = state.answers.q1;
     return a === Q.q1.options[0] || a === Q.q1.options[1];
   }
+  // People who don't make the banking decisions stop after Q2 and are asked to forward the survey.
+  function notDecider() {
+    var a = state.answers.q2;
+    return isBusiness() && (a === Q.q2.options[2] || a === Q.q2.options[3]);
+  }
+  function pathName() {
+    if (!isBusiness()) return "Personal";
+    return notDecider() ? "Business, not the decision maker" : "Business owner";
+  }
   function sequence() {
     if (!state.answers.q1) return BUSINESS; // before Q1 is answered, show the longer count
-    return isBusiness() ? BUSINESS : PERSONAL;
+    if (!isBusiness()) return PERSONAL;
+    return notDecider() ? NOT_DECIDER : BUSINESS;
   }
   function currentId() { return sequence()[state.index]; }
 
@@ -170,7 +176,6 @@
     var q = Q[id], a = state.answers[id];
     if (q.optional) return true;
     if (q.type === "multi") return Array.isArray(a) && a.length > 0;
-    if (q.type === "grid") return a && q.rows.every(function (_, i) { return a[i]; });
     return a !== undefined && a !== "";
   }
 
@@ -231,7 +236,7 @@
       "<h1 tabindex=\"-1\">What keeps you with your bank?</h1>" +
       '<p class="lede">We’re Neeraj, Dhruv, and Sami, three students in Fairfax researching what makes businesses and customers stay loyal to their bank, for a DECA finance research project.</p>' +
       '<ul class="facts">' +
-      "<li>" + CHECK + "<span>Takes about 4 minutes</span></li>" +
+      "<li>" + CHECK + "<span>Takes about 3 minutes</span></li>" +
       "<li>" + CHECK + "<span>Anonymous. We don’t ask for your name, account details, or any financial figures.</span></li>" +
       "<li>" + CHECK + "<span>If you own or run a business, you’ll get a few questions about your business banking.</span></li>" +
       "</ul>" + contact +
@@ -271,15 +276,6 @@
       if (multi && q.max) {
         body += '<p class="limit-note' + (full ? " is-full" : "") + '">' + sel.length + " of " + q.max + " chosen</p>";
       }
-    } else if (q.type === "grid") {
-      var g = a || {};
-      body = '<div class="grid-rows">' + q.rows.map(function (row, r) {
-        return '<fieldset class="grid-row"><legend>' + esc(row) + '</legend><div class="segmented">' +
-          q.cols.map(function (col, c) {
-            var on = g[r] === col;
-            return '<label class="seg' + (on ? " is-selected" : "") + '"><input type="radio" name="' + id + "-" + r + '" data-row="' + r + '" value="' + c + '"' + (on ? " checked" : "") + "" + ">" + esc(col) + "</label>";
-          }).join("") + "</div></fieldset>";
-      }).join("") + "</div>";
     } else if (q.type === "scale") {
       var count = q.max - q.min + 1, btns = "";
       for (var v = q.min; v <= q.max; v++) {
@@ -294,10 +290,14 @@
     var seq = sequence(), last = state.index === seq.length - 1;
     var sending = state.screen === "sending";
     var notice = state.screen === "error" ? '<p class="notice" role="alert">' + esc(state.errorText) + "</p>" : "";
+    var redirect = id === "q2" && notDecider()
+      ? '<p class="redirect">Thanks! The rest of the survey is for whoever makes your business\u2019s banking decisions. Submit this answer and we\u2019ll give you a link to pass along to them.</p>'
+      : "";
     var nextLabel = sending ? "Sending…" : last ? (state.screen === "error" ? "Try again" : "Submit") : "Continue";
 
     return progressHtml() +
       '<div class="question" role="group" aria-labelledby="qh"><div class="prompt"><h2 id="qh" tabindex="-1" data-autofocus>' + esc(q.prompt) + "</h2>" + help + "</div>" + body + "</div>" +
+      redirect +
       (notice ? '<div style="margin-top:1.5rem">' + notice + "</div>" : "") +
       '<div class="actions">' +
       '<button class="btn btn-quiet" id="back"' + (sending ? " disabled" : "") + ">Back</button>" +
@@ -306,11 +306,13 @@
   }
 
   function thanksHtml() {
-    var link = window.location.origin + window.location.pathname;
+    var link = window.location.origin + window.location.pathname + "?s=forward"; // tags people who got it passed along
     return guilloche() +
       '<div class="thanks">' +
       '<h1 tabindex="-1" data-autofocus>Thank you. Your answers were saved.</h1>' +
-      "<p>Know someone who owns or runs a business? Please send them this survey. Business owners are the hardest group for us to reach, and every response helps our research.</p>" +
+      (notDecider()
+        ? "<p>Please forward this survey to the person who handles your business\u2019s banking. Their answers are the ones our research needs most.</p>"
+        : "<p>Know someone who owns or runs a business? Please send them this survey. Business owners are the hardest group for us to reach, and every response helps our research.</p>") +
       '<div class="copy-row"><code id="link">' + esc(link) + '</code><button class="btn btn-quiet" id="copy">Copy link</button></div>' +
       "</div>";
   }
@@ -368,10 +370,6 @@
       state.answers[id] = q.options[Number(input.value)];
     } else if (q.type === "scale") {
       state.answers[id] = Number(input.value);
-    } else if (q.type === "grid") {
-      var g = state.answers[id] || {};
-      g[input.dataset.row] = q.cols[Number(input.value)];
-      state.answers[id] = g;
     } else if (q.type === "multi") {
       var opt = q.options[Number(input.value)];
       var sel = (state.answers[id] || []).slice();
@@ -418,14 +416,12 @@
   function buildPayload() {
     var seq = sequence(), out = {};
     out["Response ID"] = state.responseId;
-    out["Path"] = isBusiness() ? "Business owner" : "Personal";
+    out["Path"] = pathName();
     out["Source"] = source();
     out["Seconds to complete"] = state.startedAt ? Math.round((Date.now() - state.startedAt) / 1000) : "";
     ALL_IDS.forEach(function (id) {
       var q = Q[id], a = seq.indexOf(id) !== -1 ? state.answers[id] : undefined;
-      if (q.type === "grid") {
-        q.rows.forEach(function (row, r) { out[q.col + ": " + row] = a && a[r] ? a[r] : ""; });
-      } else if (q.type === "multi") {
+      if (q.type === "multi") {
         out[q.col] = Array.isArray(a) ? a.join("; ") : "";
       } else {
         out[q.col] = a === undefined || a === null ? "" : a;
@@ -476,7 +472,7 @@
   }
 
   // Expose for testing only.
-  window.__survey = { state: state, Q: Q, buildPayload: buildPayload, BUSINESS: BUSINESS, PERSONAL: PERSONAL };
+  window.__survey = { state: state, Q: Q, buildPayload: buildPayload, BUSINESS: BUSINESS, PERSONAL: PERSONAL, NOT_DECIDER: NOT_DECIDER };
 
   render();
 })();

@@ -1,6 +1,6 @@
 # What Keeps You With Your Bank?
 
-Survey site for our DECA Finance Operations Research project. One question per screen, with real branching: business owners answer Q1 to Q22, everyone else answers Q1 and Q23 to Q29. Answers are saved to a Google Sheet through a small Apps Script.
+Survey site for our DECA Finance Operations Research project. One question per screen, with real branching: business decision makers answer Q1 to Q20, people who run a business but don't make its banking decisions stop after Q2 and get a link to forward, and everyone else answers Q1 and Q21 to Q28. Answers are saved to a Google Sheet through a small Apps Script.
 
 ## Files
 
@@ -26,8 +26,10 @@ Cloudflare Pages, connected to this repo. Framework preset: None. Build command:
 
 ## Tracking where responses come from
 
-Add `?s=` to the link to tag the channel, for example `?s=email`, `?s=chamber`, or `?s=qr`. It's saved in the Source column. Links without it are saved as `direct`.
+Add `?s=` to the link to tag the channel, for example `?s=email`, `?s=chamber`, or `?s=qr`. It's saved in the Source column. Links without it are saved as `direct`. The share link on the thank-you screen is tagged `?s=forward`.
 
 ## Sheet columns
 
-Submitted at, Response ID, Path, Source, Seconds to complete, then one column per question (Q12 gets one column per row). Multi-select answers are separated by semicolons. Very short "Seconds to complete" values are worth checking before analysis.
+Submitted at, Response ID, Path (Business owner, Business not the decision maker, or Personal), Source, Seconds to complete, then one column per question. Multi-select answers are separated by semicolons. Very short "Seconds to complete" values are worth checking before analysis.
+
+If the questions change after responses start coming in, rename the old Responses tab first so the new column headers start clean.
