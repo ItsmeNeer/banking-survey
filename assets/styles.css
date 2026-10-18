@@ -56,6 +56,7 @@ body {
   padding-right: max(20px, env(safe-area-inset-right, 0px));
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: clip;
   display: flex;
   flex-direction: column;
 }
@@ -110,7 +111,7 @@ p { margin: 0; max-width: 34rem; }
   font-variant-numeric: tabular-nums;
 }
 .progress-track { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 240ms ease; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
 
 /* Question */
 .question { display: grid; gap: 1.5rem; min-width: 0; }
@@ -130,7 +131,6 @@ p { margin: 0; max-width: 34rem; }
   border-radius: var(--radius);
   background: var(--card);
   cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease;
   line-height: 1.35;
 }
 .option:hover { border-color: var(--accent); }
@@ -231,7 +231,6 @@ textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; 
 .hint { font-size: 0.875rem; color: var(--muted); }
 
 .redirect {
-  margin-top: 1.5rem;
   padding: 0.875rem 1rem;
   border-left: 3px solid var(--accent);
   border-radius: 0 8px 8px 0;
@@ -264,9 +263,94 @@ textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; 
 .noscript { padding: 2rem 0; }
 
 .screen { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.screen.enter { animation: enter 220ms ease both; }
-@keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .screen.enter { animation: none; }
-  .progress-fill, .option { transition: none; }
+.badge { color: var(--accent); }
+.redirect { margin-top: 1.5rem; }
+.spinner {
+  display: inline-block;
+  width: 0.95em; height: 0.95em;
+  margin-right: 0.55em;
+  vertical-align: -0.12em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
 }
+
+/* Motion. Everything below only runs for people who haven't asked their device to reduce motion.
+   Two orchestrated moments (the welcome reveal and the thank-you check), plus small responses to each tap. */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
+  }
+
+  /* Moving between screens: out the way you're going, in from the other side. */
+  .screen.enter-fwd > * { animation: in-fwd 320ms var(--ease-out) both; }
+  .screen.enter-back > * { animation: in-back 320ms var(--ease-out) both; }
+  .screen.leave-fwd > * { animation: out-fwd 170ms ease-in both; }
+  .screen.leave-back > * { animation: out-back 170ms ease-in both; }
+  .screen.enter.keep-bar > .progress,
+  .screen.leave.leave-keep > .progress { animation: none; }
+  .screen.leave { pointer-events: none; }
+
+  /* The question text leads, the answers follow a beat behind. */
+  .screen-question.enter .question .options,
+  .screen-question.enter .question .scale,
+  .screen-question.enter .question textarea { animation: settle 360ms 70ms var(--ease-out) both; }
+
+  /* Welcome, first visit only: the security pattern draws across, then the intro rises in. */
+  .screen-welcome.first-load > * { animation: none; }
+  .first-load .guilloche { animation: wipe 1300ms cubic-bezier(0.55, 0.1, 0.25, 1) both; }
+  .first-load .intro > *,
+  .first-load .actions { animation: rise 520ms var(--ease-out) both; }
+  .first-load .intro > :nth-child(1) { animation-delay: 180ms; }
+  .first-load .intro > :nth-child(2) { animation-delay: 280ms; }
+  .first-load .intro > :nth-child(3) { animation-delay: 380ms; }
+  .first-load .intro > :nth-child(4) { animation-delay: 460ms; }
+  .first-load .actions { animation-delay: 560ms; }
+  .first-load .facts svg path { stroke-dasharray: 1; animation: draw 300ms ease-out both; }
+  .first-load .facts li:nth-child(1) svg path { animation-delay: 650ms; }
+  .first-load .facts li:nth-child(2) svg path { animation-delay: 750ms; }
+  .first-load .facts li:nth-child(3) svg path { animation-delay: 850ms; }
+
+  /* Thank you: the check draws itself once the answers are saved. */
+  .screen-thanks.enter .badge circle { stroke-dasharray: 1; animation: draw 620ms 120ms var(--ease-out) both; }
+  .screen-thanks.enter .badge path { stroke-dasharray: 1; animation: draw 340ms 640ms ease-out both; }
+  .screen-thanks.enter .badge { animation: badge 520ms 560ms var(--ease-spring) both; }
+
+  /* Picking an answer. */
+  .option, .seg { transition: border-color 140ms ease, background-color 140ms ease, transform 120ms ease; }
+  .option:active:not(.is-disabled), .seg:active { transform: scale(0.985); }
+  .option.pop { animation: fill-in 260ms ease-out; }
+  .option.pop .mark { animation: pop 300ms var(--ease-spring); }
+  .option.pop .mark svg path { stroke-dasharray: 1; animation: draw 220ms 60ms ease-out both; }
+  .seg.pop { animation: seg-pop 280ms var(--ease-spring); }
+  .btn { transition: transform 120ms ease, opacity 200ms ease; }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn.wake { animation: wake 360ms ease-out; }
+
+  .progress-fill { transition: width 480ms var(--ease-out); }
+  .redirect.appear { animation: drop 300ms var(--ease-out) both; }
+  .notice { animation: nudge 380ms ease-out; }
+  .spinner { animation: spin 700ms linear infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner { display: none; }
+  .progress-fill { transition: none; }
+}
+
+@keyframes in-fwd { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes in-back { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes out-fwd { to { opacity: 0; transform: translateX(-18px); } }
+@keyframes out-back { to { opacity: 0; transform: translateX(18px); } }
+@keyframes settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes badge { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes fill-in { from { background-color: var(--card); border-color: var(--rule); } }
+@keyframes pop { from { transform: scale(0.55); } to { transform: scale(1); } }
+@keyframes seg-pop { 0% { transform: scale(0.88); } 100% { transform: scale(1); } }
+@keyframes wake { from { opacity: 0.4; transform: scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes drop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-5px); } 45% { transform: translateX(4px); } 70% { transform: translateX(-2px); } }
+@keyframes spin { to { transform: rotate(360deg); } }

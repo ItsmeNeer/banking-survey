@@ -185,7 +185,11 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  var CHECK = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CHECK = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" pathLength="1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var BADGE = '<svg class="badge" width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">' +
+    '<circle cx="28" cy="28" r="26" transform="rotate(-90 28 28)" pathLength="1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M17 29l7 7 15-16" pathLength="1" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function guilloche() {
     var w = 640, h = 120, paths = [];
@@ -207,7 +211,9 @@
   }
 
   // ---------- Screens ----------
-  var lastKey = "";
+  var lastKey = "", lastPct = 0, leaving = false;
+  var reduceMotion = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+
   function render() {
     clearTimeout(advanceTimer);
     var html;
@@ -215,16 +221,47 @@
     else if (state.screen === "thanks") html = thanksHtml();
     else html = questionHtml();
     // Only animate, scroll and move focus when the screen itself changes, not when an answer is picked.
-    var key = state.screen === "welcome" || state.screen === "thanks" ? state.screen : "q:" + currentId();
+    var kind = state.screen === "welcome" || state.screen === "thanks" ? state.screen : "question";
+    var key = kind === "question" ? "q:" + currentId() : kind;
     var fresh = key !== lastKey;
+    var cls = "screen screen-" + kind;
+    if (fresh) {
+      cls += " enter enter-" + (state.dir || "fwd");
+      if (lastKey === "") cls += " first-load";
+      if (lastKey.indexOf("q:") === 0 && kind === "question") cls += " keep-bar";
+    }
     lastKey = key;
-    app.innerHTML = '<div class="screen' + (fresh ? " enter" : "") + '">' + html + "</div>";
+    app.innerHTML = '<div class="' + cls + '">' + html + "</div>";
+
+    // The progress bar starts where the last one ended, then grows to its new width.
+    var fill = app.querySelector(".progress-fill");
+    if (fill) {
+      var target = fill.style.width;
+      if (fresh && !reduceMotion.matches) {
+        fill.style.width = lastPct + "%";
+        void fill.offsetWidth;
+        fill.style.width = target;
+      }
+      lastPct = parseFloat(target) || 0;
+    }
     bind();
     if (fresh) {
       var focusTarget = app.querySelector("[data-autofocus]");
       if (focusTarget) focusTarget.focus({ preventScroll: true });
       window.scrollTo(0, 0);
     }
+  }
+
+  // Fade the current screen out in the direction of travel, then show the next one.
+  function go(dir, keepBar, apply) {
+    if (leaving) return;
+    clearTimeout(advanceTimer);
+    state.dir = dir;
+    var el = app.querySelector(".screen");
+    if (!el || reduceMotion.matches) { apply(); render(); return; }
+    leaving = true;
+    el.className = el.className.replace(/ enter.*$/, "") + " leave leave-" + dir + (keepBar ? " leave-keep" : "");
+    setTimeout(function () { leaving = false; apply(); render(); }, 170);
   }
 
   function welcomeHtml() {
@@ -293,7 +330,7 @@
     var redirect = id === "q2" && notDecider()
       ? '<p class="redirect">Thanks! The rest of the survey is for whoever makes your business\u2019s banking decisions. Submit this answer and we\u2019ll give you a link to pass along to them.</p>'
       : "";
-    var nextLabel = sending ? "Sending…" : last ? (state.screen === "error" ? "Try again" : "Submit") : "Continue";
+    var nextLabel = sending ? '<span class="spinner" aria-hidden="true"></span>Sending…' : last ? (state.screen === "error" ? "Try again" : "Submit") : "Continue";
 
     return progressHtml() +
       '<div class="question" role="group" aria-labelledby="qh"><div class="prompt"><h2 id="qh" tabindex="-1" data-autofocus>' + esc(q.prompt) + "</h2>" + help + "</div>" + body + "</div>" +
@@ -308,7 +345,7 @@
   function thanksHtml() {
     var link = window.location.origin + window.location.pathname + "?s=forward"; // tags people who got it passed along
     return guilloche() +
-      '<div class="thanks">' +
+      '<div class="thanks">' + BADGE +
       '<h1 tabindex="-1" data-autofocus>Thank you. Your answers were saved.</h1>' +
       (notDecider()
         ? "<p>Please forward this survey to the person who handles your business\u2019s banking. Their answers are the ones our research needs most.</p>"
@@ -323,17 +360,20 @@
     if (start) start.addEventListener("click", function () {
       var hp = document.getElementById("website");
       state.honeypot = hp ? hp.value : "";
-      state.startedAt = Date.now();
-      state.screen = "question";
-      state.index = 0;
-      render();
+      go("fwd", false, function () {
+        state.startedAt = Date.now();
+        state.screen = "question";
+        state.index = 0;
+      });
     });
 
     var back = document.getElementById("back");
     if (back) back.addEventListener("click", function () {
-      if (state.index === 0) { state.screen = "welcome"; }
-      else { state.index--; state.screen = "question"; }
-      render();
+      var first = state.index === 0;
+      go("back", !first, function () {
+        if (first) { state.screen = "welcome"; }
+        else { state.index--; state.screen = "question"; }
+      });
     });
 
     var next = document.getElementById("next");
@@ -365,6 +405,7 @@
   }
 
   function onChange(id, q, input) {
+    if (leaving) return;
     if (state.screen === "error") state.screen = "question";
     if (q.type === "single") {
       state.answers[id] = q.options[Number(input.value)];
@@ -384,10 +425,20 @@
       }
       state.answers[id] = sel;
     }
-    var keepFocus = { name: input.name, value: input.value };
+    var keepFocus = { name: input.name, value: input.value, checked: input.checked };
+    var hadRedirect = !!app.querySelector(".redirect");
+    var nextWasOff = (document.getElementById("next") || {}).disabled;
     render();
     var again = app.querySelector('input[name="' + keepFocus.name + '"][value="' + keepFocus.value + '"]');
-    if (again) again.focus({ preventScroll: true });
+    if (again) {
+      again.focus({ preventScroll: true });
+      // Only the answer just picked animates, not every selected answer on the screen.
+      if (keepFocus.checked) again.closest("label").classList.add("pop");
+    }
+    var redirect = app.querySelector(".redirect");
+    if (redirect && !hadRedirect) redirect.classList.add("appear");
+    var next = document.getElementById("next");
+    if (next && nextWasOff && !next.disabled) next.classList.add("wake");
 
     var last = state.index === sequence().length - 1;
     if ((q.type === "single" || q.type === "scale") && !last) {
@@ -397,11 +448,12 @@
 
   function goNext() {
     clearTimeout(advanceTimer);
-    if (!isAnswered(currentId()) || state.screen === "sending") return;
+    if (leaving || !isAnswered(currentId()) || state.screen === "sending") return;
     if (state.index < sequence().length - 1) {
-      state.index++;
-      state.screen = "question";
-      render();
+      go("fwd", true, function () {
+        state.index++;
+        state.screen = "question";
+      });
     } else {
       submit();
     }
@@ -442,8 +494,7 @@
     render();
     var body = JSON.stringify(buildPayload());
     send(body).then(function () {
-      state.screen = "thanks";
-      render();
+      go("fwd", false, function () { state.screen = "thanks"; });
     }).catch(function () {
       state.screen = "error";
       state.errorText = "Your answers didn’t send. Check your internet connection, then tap Try again. Your answers are still here.";
