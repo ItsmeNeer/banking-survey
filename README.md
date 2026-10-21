@@ -33,3 +33,7 @@ Add `?s=` to the link to tag the channel, for example `?s=email`, `?s=chamber`, 
 Submitted at, Response ID, Path (Business owner, Business not the decision maker, or Personal), Source, Seconds to complete, then one column per question. Multi-select answers are separated by semicolons. Very short "Seconds to complete" values are worth checking before analysis.
 
 If the questions change after responses start coming in, rename the old Responses tab first so the new column headers start clean.
+
+## Google Forms copy for school
+
+`apps-script/SchoolForm.gs` builds a Google Forms version of the survey (same questions and branching) for networks that block the site, like school computers. Add it as a second script file in the responses sheet's Apps Script, run `createSchoolForm` once, and copy the link from the execution log. Its answers go to a separate tab in the same sheet and count as the "school" channel.
